@@ -1,16 +1,21 @@
-package presentation.ui
+package presentation.ui.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import di.MyKoinComponent
 import utils.Colors
 
 @Composable
-fun MinesView(){
+fun MinesView() {
+    val koinComponent = remember { MyKoinComponent() }
+    val gameViewModel = koinComponent.GameViewModel
+
     Column(
         modifier = Modifier.fillMaxWidth()
             .fillMaxHeight()
@@ -36,7 +41,11 @@ fun MinesView(){
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         for (j in 0 until 5) {
-                            Tile()
+                            Tile(
+                                gameViewModel = gameViewModel,
+                                tilePosition = (i * 5) + j
+                            )
+
                             if (j < 4) {
                                 Spacer(modifier = Modifier.size(4.dp))
                             }

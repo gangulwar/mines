@@ -1,33 +1,75 @@
 package presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import utils.GameState
 import kotlin.random.Random
 
 class GameViewModel : ViewModel() {
 
-    var noOfMines = 1
-    var mines: ArrayList<Int> = ArrayList()
-    var selectedTiles: List<Int> = emptyList()
-    val random = Random
+    private var noOfMines = 1
+    private var minesPosition: ArrayList<Int> = ArrayList()
+    private var selectedTiles: List<Int> = emptyList()
 
-    fun setMines() {
+    private var _currentProfitMultiplier = MutableStateFlow(1.0)
+    val currentProfitMultiplier: StateFlow<Double> = _currentProfitMultiplier
 
+    private var _currentProfitAmount = MutableStateFlow(0.0)
+    val currentProfitAmount: StateFlow<Double> = _currentProfitAmount
+
+    private val random = Random
+
+    private fun resetGame() {
+        GameState.betStarted = false
+        noOfMines = 1
+        minesPosition.clear()
+        selectedTiles = emptyList()
+        _currentProfitMultiplier.value = 1.0
+        _currentProfitAmount.value = 0.0
+    }
+
+    fun checkOutGame(){
+        GameState.currentPoints += _currentProfitAmount.value.toFloat()
+
+        resetGame()
+    }
+
+    fun setUpGame(totalMines: Int, betAmount: Double) {
+        noOfMines = totalMines
+        _currentProfitAmount.value = betAmount
+        setMines()
+    }
+
+    private fun setMines() {
         var totalMines = noOfMines
 
         while (totalMines > 0) {
             val mine = random.nextInt(1, 26)
-            if (!mines.contains(mine)) {
-                mines.add(mine)
+            if (!minesPosition.contains(mine)) {
+                minesPosition.add(mine)
                 totalMines--
             }
         }
     }
 
-    fun tileSelected(id: Int) {
+    fun checkMine(id: Int): Boolean {
+        if (minesPosition.contains(id)) {
 
+            resetGame()
+            return true
+        } else {
+            selectedTiles += id
+            val multiplier = getMultiplier(diamonds = selectedTiles.size)
+            _currentProfitMultiplier.value = multiplier
+            _currentProfitAmount.value *= multiplier
+
+            return false
+        }
     }
 
-    fun getMultiplier(mines: Int, diamonds: Int): Double {
+
+    private fun getMultiplier(mines: Int = noOfMines, diamonds: Int): Double {
         val multipliers = arrayOf(
             doubleArrayOf(
                 1.01,
@@ -278,7 +320,7 @@ class GameViewModel : ViewModel() {
         return if (diamonds <= 24 && mines <= 24) {
             multipliers[diamonds - 1][mines - 1]
         } else {
-            -1.0 // Return -1.0 to indicate an invalid input
+            -1.0
         }
     }
 }

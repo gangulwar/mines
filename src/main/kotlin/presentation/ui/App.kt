@@ -13,7 +13,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import presentation.ui.menu.Menu
+import presentation.ui.mine.MinesView
 import utils.Colors
+import utils.GameState
 import utils.INTER_FONT_FAMILY
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -26,6 +29,9 @@ fun App() {
                 modifier = Modifier.fillMaxWidth()
                     .height(65.dp),
                 title = {
+
+                    val totalPoints = GameState.currentPoints
+
                     Box(
                         modifier = Modifier.fillMaxWidth()
                             .padding(top = 5.dp, bottom = 5.dp),
@@ -35,7 +41,7 @@ fun App() {
                             modifier = Modifier
                                 .background(Colors.TILE_BG)
                                 .padding(15.dp),
-                            text = "₹ 1000.000",
+                            text = "₹ $totalPoints",
                             style = TextStyle(
                                 fontFamily = INTER_FONT_FAMILY,
                                 fontWeight = FontWeight.ExtraBold,
