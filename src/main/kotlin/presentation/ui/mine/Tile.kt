@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
 import di.MyKoinComponent
+import kotlinx.coroutines.delay
 import presentation.viewmodel.GameViewModel
 import utils.Colors
 import utils.Path
@@ -29,15 +30,21 @@ import java.io.File
 @Composable
 fun Tile(
     gameViewModel: GameViewModel,
-    tilePosition: Int
+    tilePosition: Int,
+    showMultiplierDialog: Boolean,
+    onMineRecieved:() -> Unit
 ) {
-    val koinComponent = remember { MyKoinComponent() }
-
-//    val tileStates by koinComponent.TileViewModel.selectedTiles
-
 
     var selected by remember { mutableStateOf(false) }
     var tileWithMine by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showMultiplierDialog) {
+        if (showMultiplierDialog) {
+            delay(3000)
+            selected = false
+            tileWithMine = false
+        }
+    }
 
     Box {
 
@@ -67,6 +74,9 @@ fun Tile(
                     indication = null,
                     onClick = {
                         tileWithMine = gameViewModel.checkMine(tilePosition)
+                        if (tileWithMine) {
+                            onMineRecieved()
+                        }
                         selected = true
                     }
                 )

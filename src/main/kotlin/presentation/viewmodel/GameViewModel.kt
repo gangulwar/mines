@@ -1,6 +1,7 @@
 package presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import utils.GameState
@@ -11,12 +12,16 @@ class GameViewModel : ViewModel() {
     private var noOfMines = 1
     private var minesPosition: ArrayList<Int> = ArrayList()
     private var selectedTiles: List<Int> = emptyList()
+    private var amountBetted = 0.0
 
     private var _currentProfitMultiplier = MutableStateFlow(1.0)
     val currentProfitMultiplier: StateFlow<Double> = _currentProfitMultiplier
 
     private var _currentProfitAmount = MutableStateFlow(0.0)
     val currentProfitAmount: StateFlow<Double> = _currentProfitAmount
+
+    private var _multiplierDialog = MutableStateFlow(false)
+    val multiplierDialog: StateFlow<Boolean> = _multiplierDialog
 
     private val random = Random
 
@@ -29,15 +34,16 @@ class GameViewModel : ViewModel() {
         _currentProfitAmount.value = 0.0
     }
 
-    fun checkOutGame(){
+    fun checkOutGame() {
         GameState.currentPoints += _currentProfitAmount.value.toFloat()
-
+        _multiplierDialog.value = true
         resetGame()
     }
 
     fun setUpGame(totalMines: Int, betAmount: Double) {
+        _multiplierDialog.value = false
         noOfMines = totalMines
-        _currentProfitAmount.value = betAmount
+        amountBetted = betAmount
         setMines()
     }
 
@@ -55,19 +61,24 @@ class GameViewModel : ViewModel() {
 
     fun checkMine(id: Int): Boolean {
         if (minesPosition.contains(id)) {
-
             resetGame()
             return true
         } else {
             selectedTiles += id
             val multiplier = getMultiplier(diamonds = selectedTiles.size)
             _currentProfitMultiplier.value = multiplier
-            _currentProfitAmount.value *= multiplier
+            _currentProfitAmount.value = amountBetted * multiplier
+
+            GameState.lastMultipier = multiplier.toFloat()
+            GameState.lstProfitAmount = _currentProfitAmount.value.toFloat()
 
             return false
         }
     }
 
+    fun setMultiplierDialog(value: Boolean) {
+        _multiplierDialog.value = value
+    }
 
     private fun getMultiplier(mines: Int = noOfMines, diamonds: Int): Double {
         val multipliers = arrayOf(

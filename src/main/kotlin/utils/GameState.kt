@@ -8,6 +8,9 @@ object GameState {
     var currentPoints by mutableStateOf(1000f)
     var betAmount = 0
 
+    var lastMultipier = 1.0f
+    var lstProfitAmount = 0.0f
+
     var betStarted by mutableStateOf(false)
 
 }
