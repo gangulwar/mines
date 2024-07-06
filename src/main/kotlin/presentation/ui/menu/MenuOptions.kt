@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import di.MyKoinComponent
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import utils.Colors
 import utils.GameState
 import utils.INTER_FONT_FAMILY
@@ -37,6 +38,8 @@ fun MenuOptions() {
     val isBetStarted = GameState.betStarted
 
     var betAmount by remember { mutableStateOf("0.000") }
+
+    var coroutineScope = rememberCoroutineScope()
 
     Text(
         modifier = Modifier,
@@ -241,9 +244,12 @@ fun MenuOptions() {
 //            isBetStarted = true
             if (!isBetStarted) {
                 GameState.betStarted = true
-                koinComponent.GameViewModel.setUpGame(totalMines = minesCount.toInt(), betAmount = betAmount.toDouble())
+                koinComponent.GameViewModel.setUpGame(totalMines = minesCount.toInt(), betAmount = betAmount.toFloat())
             } else {
-                koinComponent.GameViewModel.checkOutGame()
+                coroutineScope.launch {
+                    koinComponent.GameViewModel.checkOutGame()
+                }
+//                koinComponent.GameViewModel.checkOutGame()
             }
 
         },

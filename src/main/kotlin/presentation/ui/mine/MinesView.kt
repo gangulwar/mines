@@ -103,6 +103,7 @@ fun MinesView() {
 @Preview
 @Composable
 fun CheckoutDialog() {
+
     Card(
         modifier = Modifier.width(180.dp).height(125.dp),
         backgroundColor = Colors.MAIN_BG,

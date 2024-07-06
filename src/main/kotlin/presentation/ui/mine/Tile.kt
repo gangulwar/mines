@@ -19,9 +19,12 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.dp
 import di.MyKoinComponent
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import presentation.viewmodel.GameViewModel
 import utils.Colors
+import utils.GameState
 import utils.Path
 import java.io.File
 
@@ -32,18 +35,31 @@ fun Tile(
     gameViewModel: GameViewModel,
     tilePosition: Int,
     showMultiplierDialog: Boolean,
-    onMineRecieved:() -> Unit
+    onMineRecieved: () -> Unit
 ) {
 
     var selected by remember { mutableStateOf(false) }
     var tileWithMine by remember { mutableStateOf(false) }
 
+    val startClicks = GameState.betStarted
+
     LaunchedEffect(showMultiplierDialog) {
         if (showMultiplierDialog) {
-            delay(3000)
+            selected = true
+            tileWithMine = gameViewModel.onlyCheckMines(tilePosition)
+//            delay(3000)
+//            selected = false
+//            tileWithMine = false
+        }
+
+        if (startClicks){
             selected = false
             tileWithMine = false
         }
+//        if (!startClicks){
+//            selected = false
+//            tileWithMine = gameViewModel.onlyCheckMines(tilePosition)
+//        }
     }
 
     Box {
@@ -73,13 +89,22 @@ fun Tile(
                     interactionSource = MutableInteractionSource(),
                     indication = null,
                     onClick = {
-                        tileWithMine = gameViewModel.checkMine(tilePosition)
-                        if (tileWithMine) {
-                            onMineRecieved()
+                        if (!startClicks) {
+                            return@clickable
                         }
-                        selected = true
+                        GlobalScope.launch {
+                            tileWithMine = gameViewModel.checkMine(tilePosition)
+                            if (tileWithMine) {
+                                onMineRecieved()
+//                                gameViewModel.resetGame()
+                            }
+                            selected = true
+                        }
+
+
                     }
                 )
+
         )
 
         if (selected && !tileWithMine) {

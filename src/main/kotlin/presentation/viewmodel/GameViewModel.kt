@@ -1,7 +1,7 @@
 package presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import utils.GameState
@@ -12,7 +12,7 @@ class GameViewModel : ViewModel() {
     private var noOfMines = 1
     private var minesPosition: ArrayList<Int> = ArrayList()
     private var selectedTiles: List<Int> = emptyList()
-    private var amountBetted = 0.0
+    private var amountBetted = 0.0f
 
     private var _currentProfitMultiplier = MutableStateFlow(1.0)
     val currentProfitMultiplier: StateFlow<Double> = _currentProfitMultiplier
@@ -25,13 +25,20 @@ class GameViewModel : ViewModel() {
 
     private val random = Random
 
-    private fun resetGame() {
+    private var resetGameJob: Job? = null
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun resetGame() {
         GameState.betStarted = false
         noOfMines = 1
+
+//            delay(3000)
+
         minesPosition.clear()
         selectedTiles = emptyList()
         _currentProfitMultiplier.value = 1.0
         _currentProfitAmount.value = 0.0
+
     }
 
     fun checkOutGame() {
@@ -40,7 +47,11 @@ class GameViewModel : ViewModel() {
         resetGame()
     }
 
-    fun setUpGame(totalMines: Int, betAmount: Double) {
+    fun setUpGame(totalMines: Int, betAmount: Float) {
+        resetGameJob?.cancel().apply {
+            println("Job cancelled from setUpGame()")
+
+        }
         _multiplierDialog.value = false
         noOfMines = totalMines
         amountBetted = betAmount
@@ -51,17 +62,23 @@ class GameViewModel : ViewModel() {
         var totalMines = noOfMines
 
         while (totalMines > 0) {
-            val mine = random.nextInt(1, 26)
+            val mine = random.nextInt(0, 25)
             if (!minesPosition.contains(mine)) {
                 minesPosition.add(mine)
                 totalMines--
             }
         }
+
+
+        GameState.lastMinesPosition = minesPosition.clone() as ArrayList<Int>
+
+        println("Mines: $minesPosition")
     }
 
     fun checkMine(id: Int): Boolean {
         if (minesPosition.contains(id)) {
             resetGame()
+            GameState.currentPoints -= amountBetted
             return true
         } else {
             selectedTiles += id
@@ -71,12 +88,20 @@ class GameViewModel : ViewModel() {
 
             GameState.lastMultipier = multiplier.toFloat()
             GameState.lstProfitAmount = _currentProfitAmount.value.toFloat()
+            GameState.lastSelectedTiles = selectedTiles
 
             return false
         }
     }
 
+    fun onlyCheckMines(id: Int): Boolean {
+//        println("iD: $id ${GameState.lastMinesPosition.contains(id)}")
+        return GameState.lastMinesPosition.contains(id)
+    }
+
     fun setMultiplierDialog(value: Boolean) {
+//        GameState.lastMultipier = 0.0f
+
         _multiplierDialog.value = value
     }
 

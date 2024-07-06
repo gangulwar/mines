@@ -10,8 +10,12 @@ object GameState {
 
     var lastMultipier = 1.0f
     var lstProfitAmount = 0.0f
+    var lastMinesPosition: ArrayList<Int> =ArrayList()
+    var lastSelectedTiles: List<Int> = emptyList()
+
 
     var betStarted by mutableStateOf(false)
 
+    var enableMinesClicks by mutableStateOf(false)
 }
 
